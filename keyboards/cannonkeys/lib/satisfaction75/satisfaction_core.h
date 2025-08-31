@@ -14,7 +14,6 @@
 #define EEPROM_ENABLED_ENCODER_MODES_OFFSET 0
 #define EEPROM_DEFAULT_OLED_OFFSET 1
 #define EEPROM_CUSTOM_ENCODER_OFFSET 2
-#define BONGO_ENABLE
 
 enum s75_keyboard_value_id {
   id_encoder_modes = 1,

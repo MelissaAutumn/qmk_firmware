@@ -167,6 +167,7 @@ uint32_t oled_scroll_timeout;
 #if OLED_UPDATE_INTERVAL > 0
 uint16_t oled_update_timeout;
 #endif
+uint32_t custom_oled_update_interval = 0;
 
 #if defined(OLED_TRANSPORT_SPI)
 #    ifndef OLED_DC_PIN
@@ -931,15 +932,22 @@ void oled_task(void) {
         return;
     }
 
+    if (custom_oled_update_interval > 0 && timer_elapsed(oled_update_timeout) >= custom_oled_update_interval) {
+        oled_update_timeout = timer_read();
+        oled_set_cursor(0, 0);
+        oled_task_kb();
+    }
 #if OLED_UPDATE_INTERVAL > 0
-    if (timer_elapsed(oled_update_timeout) >= OLED_UPDATE_INTERVAL) {
+    else if (custom_oled_update_interval == 0 && timer_elapsed(oled_update_timeout) >= OLED_UPDATE_INTERVAL) {
         oled_update_timeout = timer_read();
         oled_set_cursor(0, 0);
         oled_task_kb();
     }
 #else
-    oled_set_cursor(0, 0);
-    oled_task_kb();
+    else {
+        oled_set_cursor(0, 0);
+        oled_task_kb();
+    }
 #endif
 
 #if OLED_SCROLL_TIMEOUT > 0
@@ -975,4 +983,8 @@ __attribute__((weak)) bool oled_task_kb(void) {
 }
 __attribute__((weak)) bool oled_task_user(void) {
     return true;
+}
+
+void oled_set_custom_update_interval(uint32_t rate) {
+    custom_oled_update_interval = rate;
 }

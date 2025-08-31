@@ -22,7 +22,6 @@
 //#define STANDARD_TIMINGS 1
 #define FAST_TIMINGS 1
 
-
 #if defined(DEFAULT_TIMINGS)
 // ???
 #define I2C1_TIMINGR_PRESC 0x00U
@@ -51,6 +50,10 @@
 
 // configure oled driver for the 128x32 oledz
 #define OLED_UPDATE_INTERVAL 33 // ~30fps
+#define BONGO_CAT_UPDATE_INTERVAL 66 // ~15fps
+
+// Enable bongo cat
+#define BONGO_ENABLE
 
 // OLED_TIMEOUT is incompatible with the OLED_OFF mode
 #define OLED_TIMEOUT 0

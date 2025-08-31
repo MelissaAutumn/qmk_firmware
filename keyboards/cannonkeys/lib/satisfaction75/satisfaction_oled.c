@@ -27,7 +27,6 @@ static bool oled_sleep = false;
 oled_rotation_t oled_init_kb(oled_rotation_t rotation) { return OLED_ROTATION_0; }
 
 bool oled_task_kb(void) {
-
     if (!oled_task_user()) { return false; }
     if (!oled_task_needs_to_repaint()) {
         return false;

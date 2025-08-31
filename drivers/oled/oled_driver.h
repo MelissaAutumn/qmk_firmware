@@ -489,3 +489,6 @@ uint8_t oled_max_chars(void);
 
 // Returns the maximum number of lines that will fit on the oled
 uint8_t oled_max_lines(void);
+
+// Custom function, overrides OLED_UPDATE_INTERVAL with a custom value. Call with 0 to revert to OLED_UPDATE_INTERVAL.
+void oled_set_custom_update_interval(uint32_t rate);
