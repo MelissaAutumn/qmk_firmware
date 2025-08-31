@@ -1,0 +1,1 @@
+void oled_hid_draw(void);

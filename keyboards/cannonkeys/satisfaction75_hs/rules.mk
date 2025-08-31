@@ -8,7 +8,7 @@ SRC += satisfaction_encoder.c \
 
 # Extra option
 COMMAND_ENABLE = yes    # Commands for debug and configuration
-VIA_ENABLE = yes
+#VIA_ENABLE = yes
 WPM_ENABLE = yes
 
 

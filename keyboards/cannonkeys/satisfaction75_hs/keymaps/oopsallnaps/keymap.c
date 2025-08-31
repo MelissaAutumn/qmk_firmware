@@ -3,6 +3,11 @@
 
 #include QMK_KEYBOARD_H
 
+#ifdef OLED_HID_ENABLE
+#include "raw_hid.h"
+#include "../../lib/satisfaction75/oled_hid.h"
+#endif
+
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   [0] = LAYOUT_all(
     KC_ESC,   KC_F1,    KC_F2,    KC_F3,    KC_F4,    KC_F5,    KC_F6,    KC_F7,    KC_F8,    KC_F9,    KC_F10,   KC_F11,   KC_F12,   ENC_PRESS,
@@ -13,7 +18,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     KC_LCTL,  KC_LGUI,  KC_LALT,                      KC_SPC,                                 KC_RCTL,  MO(1),    KC_RALT,  KC_LEFT,  KC_DOWN,  KC_RGHT
   ),
   [1] = LAYOUT_all(
-    QK_REBOOT, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, OLED_TOGG,
+    QK_REBOOT, _______, _______, _______, _______, _______, _______, _______, _______, _______, KC_MEDIA_PREV_TRACK, KC_MEDIA_PLAY_PAUSE, KC_MEDIA_NEXT_TRACK, OLED_TOGG,
     _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
     _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, CLOCK_SET,
     _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,          _______, _______,
@@ -32,4 +37,17 @@ void keyboard_post_init_user(void) {
     //debug_mouse=true;
 }
 
-// TODO: https://github.com/BlankSourceCode/qmk-hid-display
+#ifdef OLED_HID_ENABLE
+
+char test_str[32] = {0};
+
+void oled_hid_draw(void) {
+	oled_set_cursor(0, 0);
+	oled_write_P(test_str, false);
+}
+
+void raw_hid_receive(uint8_t *data, uint8_t length) {
+	memcpy((void*)test_str, data, length);
+}
+
+#endif

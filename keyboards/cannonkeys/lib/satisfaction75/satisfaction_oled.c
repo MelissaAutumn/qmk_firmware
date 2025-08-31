@@ -23,6 +23,10 @@ void draw_clock(void);
 #include "bongo.h"
 #endif
 
+#ifdef OLED_HID_ENABLE
+#include "oled_hid.h"
+#endif
+
 static bool oled_sleep = false;
 oled_rotation_t oled_init_kb(oled_rotation_t rotation) { return OLED_ROTATION_0; }
 
@@ -51,6 +55,11 @@ bool oled_task_kb(void) {
         case OLED_BONGO_MIN:
             draw_bongo(true);
             break;
+#endif
+#ifdef OLED_HID_ENABLE
+		case OLED_HID_MODE:
+			oled_hid_draw();
+			break;
 #endif
     }
     return false;

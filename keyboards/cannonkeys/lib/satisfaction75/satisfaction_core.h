@@ -48,6 +48,9 @@ enum oled_modes {
   OLED_BONGO,
   OLED_BONGO_MIN,
 #endif
+#ifdef OLED_HID_ENABLE
+  OLED_HID_MODE,
+#endif
   OLED_OFF,
   _NUM_OLED_MODES
 };

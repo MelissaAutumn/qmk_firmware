@@ -54,6 +54,7 @@
 
 // Enable bongo cat
 #define BONGO_ENABLE
+#define OLED_HID_ENABLE
 
 // OLED_TIMEOUT is incompatible with the OLED_OFF mode
 #define OLED_TIMEOUT 0
