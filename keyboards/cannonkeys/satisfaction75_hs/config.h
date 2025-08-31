@@ -17,14 +17,40 @@
 #define I2C1_SDA_PIN B7
 #define I2C1_SCL_PAL_MODE 1
 #define I2C1_SDA_PAL_MODE 1
+
+//#define DEFAULT_TIMINGS 1
+//#define STANDARD_TIMINGS 1
+#define FAST_TIMINGS 1
+
+
+#if defined(DEFAULT_TIMINGS)
+// ???
 #define I2C1_TIMINGR_PRESC 0x00U
 #define I2C1_TIMINGR_SCLDEL 0x03U
 #define I2C1_TIMINGR_SDADEL 0x01U
 #define I2C1_TIMINGR_SCLH 0x03U
 #define I2C1_TIMINGR_SCLL 0x09U
+#elif defined(FAST_TIMINGS)
+// Fast timings (400-100-100)
+#define I2C1_TIMINGR_PRESC 0x00U
+#define I2C1_TIMINGR_SCLDEL 0x00U
+#define I2C1_TIMINGR_SDADEL 0x01U
+#define I2C1_TIMINGR_SCLH 0x02U
+#define I2C1_TIMINGR_SCLL 0x0AU
+#elif defined(STANDARD_TIMINGS)
+// Standard timings (100-100-100)
+#define I2C1_TIMINGR_PRESC 0x00U
+#define I2C1_TIMINGR_SCLDEL 0x02U
+#define I2C1_TIMINGR_SDADEL 0x00U
+#define I2C1_TIMINGR_SCLH 0x1DU
+#define I2C1_TIMINGR_SCLL 0x2BU
+#endif
 
-// configure oled driver for the 128x32 oled
-#define OLED_UPDATE_INTERVAL 66 // ~15fps
+// Fixes oled_init erroring out
+#define OLED_I2C_TIMEOUT 500
+
+// configure oled driver for the 128x32 oledz
+#define OLED_UPDATE_INTERVAL 33 // ~30fps
 
 // OLED_TIMEOUT is incompatible with the OLED_OFF mode
 #define OLED_TIMEOUT 0

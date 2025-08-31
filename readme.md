@@ -1,3 +1,30 @@
+# Mel's Fork
+
+This is a fork of the QMK firmware that "fixes" the oled init issues I was experiencing, adds bongocat (like the stock firmware), and some other tweaks.
+
+## Changes
+
+* i2c timings have been updated to fast mode from the default timings. 
+* `OLED_I2C_TIMEOUT` has been pushed up from the default `100` to `500` to work around oled_init fail issues.
+* oled_on / oled_off time out repeatedly with a `OLED_I2C_TIMEOUT` greater than `100` so they've been replaced with clearing the screen.
+* [Bongocat](https://github.com/pedker/OLED-BongoCat-Revision/) has been added in like the stock firmware.
+* OLED refresh time has been upped to 30fps from 15fps. (I don't know how many refreshes a second this display can handle, but 30 seems to work.)
+* Stock layout has been altered slightly (see [oopsappnaps/keymap.c](keyboards/cannonkeys/satisfaction75_hs/keymaps/oopsallnaps/keymap.c))
+
+## Building
+
+You can build this firmware for the Sat75x (not original Sat75 boards) with:
+
+```
+make cannonkeys/satisfaction75_hs:oopsallnaps
+```
+
+You can also build and then flash by running:
+
+```
+make cannonkeys/satisfaction75_hs:oopsallnaps:flash
+```
+
 # Quantum Mechanical Keyboard Firmware
 
 [![Current Version](https://img.shields.io/github/tag/qmk/qmk_firmware.svg)](https://github.com/qmk/qmk_firmware/tags)

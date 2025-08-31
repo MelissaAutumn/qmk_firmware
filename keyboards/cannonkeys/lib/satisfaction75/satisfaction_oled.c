@@ -22,9 +22,12 @@ void draw_clock(void);
 #include "wpm.h"
 #include "bongo.h"
 #endif
+
+static bool oled_sleep = false;
 oled_rotation_t oled_init_kb(oled_rotation_t rotation) { return OLED_ROTATION_0; }
 
 bool oled_task_kb(void) {
+
     if (!oled_task_user()) { return false; }
     if (!oled_task_needs_to_repaint()) {
         return false;
@@ -58,7 +61,7 @@ bool oled_task_kb(void) {
 // Used for things like clock updates that should not keep the OLED turned on
 // if there is no other activity.
 void oled_request_repaint(void) {
-    if (is_oled_on()) {
+    if (!oled_sleep) {//is_oled_on()) {
         oled_repaint_requested = true;
     }
 }
@@ -73,12 +76,15 @@ void oled_request_wakeup(void) {
 // function should be called at the start of oled_task_user(); it also handles
 // the OLED sleep timer and the OLED_OFF mode.
 bool oled_task_needs_to_repaint(void) {
+
     // In the OLED_OFF mode the OLED is kept turned off; any wakeup requests
     // are ignored.
     if ((oled_mode == OLED_OFF) && !clock_set_mode) {
         oled_wakeup_requested = false;
         oled_repaint_requested = false;
-        oled_off();
+        //oled_off();
+        oled_clear();
+        oled_sleep = true;
         return false;
     }
 
@@ -87,7 +93,9 @@ bool oled_task_needs_to_repaint(void) {
         oled_wakeup_requested = false;
         oled_repaint_requested = false;
         oled_sleep_timer = timer_read32() + CUSTOM_OLED_TIMEOUT;
-        oled_on();
+        //oled_on();
+        oled_clear();
+        oled_sleep = false;
         return true;
     }
 
@@ -100,13 +108,15 @@ bool oled_task_needs_to_repaint(void) {
 
     // If the OLED is currently off, skip the repaint (which would turn the
     // OLED on if the image is changed in any way).
-    if (!is_oled_on()) {
+    if (oled_sleep) {//!is_oled_on()) {
         return false;
     }
 
     // If the sleep timer has expired while the OLED was on, turn the OLED off.
     if (timer_expired32(timer_read32(), oled_sleep_timer)) {
-        oled_off();
+        //oled_off();
+        oled_clear();
+        oled_sleep = true;
         return false;
     }
 
