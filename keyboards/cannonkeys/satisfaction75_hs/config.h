@@ -51,10 +51,14 @@
 // configure oled driver for the 128x32 oledz
 #define OLED_UPDATE_INTERVAL 33 // ~30fps
 #define BONGO_CAT_UPDATE_INTERVAL 66 // ~15fps
+#define OLED_HID_UPDATE_INTERVAL 100 // ~10fps
 
 // Enable bongo cat
 #define BONGO_ENABLE
+// Enable OLED hid
 #define OLED_HID_ENABLE
+// Enables syncing RTC via a hid command (requires OLED_HID_ENABLE)
+#define HID_TIMESYNC_ENABLE
 
 // OLED_TIMEOUT is incompatible with the OLED_OFF mode
 #define OLED_TIMEOUT 0

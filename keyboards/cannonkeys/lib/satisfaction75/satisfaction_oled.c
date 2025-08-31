@@ -173,6 +173,23 @@ static char* get_enc_mode(void) {
     }
 }
 
+int oled_hid_get_hour(void) {
+	return last_minute / 60;
+}
+
+int oled_hid_get_minute(void) {
+	return last_minute % 60;
+}
+
+void oled_hid_set_time(time_t unix_time) {
+	struct tm tim;
+	RTCDateTime timespec;
+
+	localtime_r(&unix_time, &tim);
+	rtcConvertStructTmToDateTime(&tim, 0, &timespec);
+	rtcSetTime(&RTCD1, &timespec);
+}
+
 static char* get_time(void) {
     uint8_t  hour   = last_minute / 60;
     uint16_t minute = last_minute % 60;

@@ -237,6 +237,8 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
           oled_mode = (oled_mode + 1) % _NUM_OLED_MODES;
           if (oled_mode == OLED_BONGO || oled_mode == OLED_BONGO_MIN) {
             oled_set_custom_update_interval(BONGO_CAT_UPDATE_INTERVAL);
+		  } else if (oled_mode == OLED_HID_MODE) {
+			oled_set_custom_update_interval(OLED_HID_UPDATE_INTERVAL);
           } else {
             oled_set_custom_update_interval(0);
           }
