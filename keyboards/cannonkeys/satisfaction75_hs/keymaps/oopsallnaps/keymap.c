@@ -230,7 +230,7 @@ void oled_hid_draw(void) {
 	int hour = oled_hid_get_hour();
 	int minute = oled_hid_get_minute();
 
-	int start_col = 9;
+	int start_col = 10;
 	int start_row = 0;
 
 	if (hour >= 10) {
@@ -271,8 +271,6 @@ enum OLED_HID_COMMANDS {
 };
 
 void raw_hid_receive(uint8_t *data, uint8_t length) {
-	//printf("--raw_hid_recieve(%p, %d)\n",data,length);
-	//memcpy((void*)test_str, data, length);
 	uint8_t* cursor = data;
 
 	while (*cursor != OLED_HID_NULL) {
@@ -299,14 +297,6 @@ void raw_hid_receive(uint8_t *data, uint8_t length) {
 				int unix_time = byte1 << 24 | byte2 << 16 | byte3 << 8 | byte4;
 				printf("--unix timestamp <%d>\n", unix_time);
 				oled_hid_set_time((time_t)unix_time);
-
-				//int year = (int)*(cursor++);
-				//int month = (int)*(cursor++);
-				//int day = (int)*(cursor++);
-				//int hour = (int)*(cursor++);
-				//int min = (int)*(cursor++);
-				//int sec = (int)*(cursor++);
-				//oled_hid_set_time(year, month, day, hour, min, sec);
 			}
 			break;
 #endif

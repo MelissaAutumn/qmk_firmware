@@ -10,6 +10,8 @@ This is a fork of the QMK firmware that "fixes" the oled init issues I was exper
 * [Bongocat](https://github.com/pedker/OLED-BongoCat-Revision/) has been added in like the stock firmware.
 * OLED refresh time has been upped to 30fps from 15fps. (I don't know how many refreshes a second this display can handle, but 30 seems to work.)
 * Stock layout has been altered slightly (see [oopsappnaps/keymap.c](keyboards/cannonkeys/satisfaction75_hs/keymaps/oopsallnaps/keymap.c))
+* OLED hid mode which updates the display with cpu, gpu, and ram from a python script running on your computer.
+* Optionally with OLED hid mod enabled you can have the python script set the keyboard's date and time.
 
 ## Building
 
