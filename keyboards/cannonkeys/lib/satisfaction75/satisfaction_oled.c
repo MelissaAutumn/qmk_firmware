@@ -10,6 +10,7 @@
 #include "host.h"
 #include "progmem.h"
 #include <stdio.h>
+#include <stdlib.h>
 
 void draw_default(void);
 void draw_clock(void);
@@ -17,6 +18,10 @@ void draw_clock(void);
 #ifdef OLED_ENABLE
 #include "oled_driver.h"
 
+#ifdef BONGO_ENABLE
+#include "wpm.h"
+#include "bongo.h"
+#endif
 oled_rotation_t oled_init_kb(oled_rotation_t rotation) { return OLED_ROTATION_0; }
 
 bool oled_task_kb(void) {
@@ -37,6 +42,14 @@ bool oled_task_kb(void) {
         case OLED_TIME:
             draw_clock();
             break;
+#ifdef BONGO_ENABLE
+        case OLED_BONGO:
+            draw_bongo(false);
+            break;
+        case OLED_BONGO_MIN:
+            draw_bongo(true);
+            break;
+#endif
     }
     return false;
 }

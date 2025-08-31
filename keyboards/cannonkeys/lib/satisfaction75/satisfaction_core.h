@@ -14,6 +14,7 @@
 #define EEPROM_ENABLED_ENCODER_MODES_OFFSET 0
 #define EEPROM_DEFAULT_OLED_OFFSET 1
 #define EEPROM_CUSTOM_ENCODER_OFFSET 2
+#define BONGO_ENABLE
 
 enum s75_keyboard_value_id {
   id_encoder_modes = 1,
@@ -44,10 +45,13 @@ enum custom_encoder_behavior {
 enum oled_modes {
   OLED_DEFAULT,
   OLED_TIME,
+#ifdef BONGO_ENABLE
+  OLED_BONGO,
+  OLED_BONGO_MIN,
+#endif
   OLED_OFF,
   _NUM_OLED_MODES
 };
-
 
 // Keyboard Information
 extern volatile uint8_t led_numlock;
