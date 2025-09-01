@@ -252,18 +252,11 @@ void oled_hid_draw(void) {
 		draw_large_digit(minute % 10, start_col+8, start_row);
 	}
 
-    start_col = 0;
+    start_col = 8;
     start_row = 3;
 
     // Draw stats
     oled_set_cursor(start_col, start_row);
-
-    led_t led_state = host_keyboard_led_state();
-    oled_write_P(PSTR("CAP"), led_state.caps_lock);
-    oled_advance_char();
-    oled_write_P(PSTR("SCR"), led_state.scroll_lock);
-
-    oled_advance_char();
 
     oled_write_P(PSTR("LYR "), false);
     oled_write_char(get_highest_layer(layer_state) + 0x30, true);

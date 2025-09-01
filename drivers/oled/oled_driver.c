@@ -772,10 +772,13 @@ bool oled_off(void) {
         return !oled_active;
     }
 
-
 #ifdef OLED_ALWAYS_ON
     if (!oled_sleeping) {
         oled_clear();
+
+        // Ah heck it
+        oled_render_dirty(true);
+
         oled_sleeping = true;
     }
     return oled_sleeping;
