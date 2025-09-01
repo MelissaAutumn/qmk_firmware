@@ -762,7 +762,6 @@ bool oled_on(void) {
         oled_active = true;
     }
 #ifdef OLED_ALWAYS_ON
-    oled_clear();
     oled_sleeping = false;
 #endif
     return oled_active;
@@ -772,6 +771,7 @@ bool oled_off(void) {
     if (!oled_initialized) {
         return !oled_active;
     }
+
 
 #ifdef OLED_ALWAYS_ON
     if (!oled_sleeping) {
@@ -981,7 +981,7 @@ void oled_task(void) {
 
     // Display timeout check
 #if OLED_TIMEOUT > 0
-    if (is_oled_on() && timer_expired32(timer_read32(), oled_timeout)) {
+    if (oled_active && timer_expired32(timer_read32(), oled_timeout)) {
         oled_off();
     }
 #endif
