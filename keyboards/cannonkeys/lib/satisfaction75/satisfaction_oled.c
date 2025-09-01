@@ -142,7 +142,7 @@ static void draw_line_v(uint8_t x, uint8_t y, uint8_t len) {
     }
 }
 
-static char* get_enc_mode(void) {
+char* get_enc_mode(void) {
     switch (encoder_mode) {
         default:
         case ENC_MODE_VOLUME:
