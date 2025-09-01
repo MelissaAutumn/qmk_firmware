@@ -60,6 +60,9 @@
 // Enables syncing RTC via a hid command (requires OLED_HID_ENABLE)
 #define HID_TIMESYNC_ENABLE
 
+// Don't turn the display off
+// In cases where the display would sleep, it's simply cleared
+#define OLED_ALWAYS_ON 1
 // OLED_TIMEOUT is incompatible with the OLED_OFF mode
 #define OLED_TIMEOUT 0
 

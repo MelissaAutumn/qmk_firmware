@@ -27,7 +27,6 @@ void draw_clock(void);
 #include "oled_hid.h"
 #endif
 
-static bool oled_sleep = false;
 oled_rotation_t oled_init_kb(oled_rotation_t rotation) { return OLED_ROTATION_0; }
 
 bool oled_task_kb(void) {
@@ -69,7 +68,7 @@ bool oled_task_kb(void) {
 // Used for things like clock updates that should not keep the OLED turned on
 // if there is no other activity.
 void oled_request_repaint(void) {
-    if (!oled_sleep) {//is_oled_on()) {
+    if (is_oled_on()) {
         oled_repaint_requested = true;
     }
 }
@@ -90,9 +89,7 @@ bool oled_task_needs_to_repaint(void) {
     if ((oled_mode == OLED_OFF) && !clock_set_mode) {
         oled_wakeup_requested = false;
         oled_repaint_requested = false;
-        //oled_off();
-        oled_clear();
-        oled_sleep = true;
+        oled_off();
         return false;
     }
 
@@ -101,9 +98,7 @@ bool oled_task_needs_to_repaint(void) {
         oled_wakeup_requested = false;
         oled_repaint_requested = false;
         oled_sleep_timer = timer_read32() + CUSTOM_OLED_TIMEOUT;
-        //oled_on();
-        oled_clear();
-        oled_sleep = false;
+        oled_on();
         return true;
     }
 
@@ -116,15 +111,13 @@ bool oled_task_needs_to_repaint(void) {
 
     // If the OLED is currently off, skip the repaint (which would turn the
     // OLED on if the image is changed in any way).
-    if (oled_sleep) {//!is_oled_on()) {
+    if (!is_oled_on()) {
         return false;
     }
 
     // If the sleep timer has expired while the OLED was on, turn the OLED off.
     if (timer_expired32(timer_read32(), oled_sleep_timer)) {
-        //oled_off();
-        oled_clear();
-        oled_sleep = true;
+        oled_off();
         return false;
     }
 

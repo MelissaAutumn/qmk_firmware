@@ -168,6 +168,9 @@ uint32_t oled_scroll_timeout;
 uint16_t oled_update_timeout;
 #endif
 uint32_t custom_oled_update_interval = 0;
+#ifdef OLED_ALWAYS_ON
+bool oled_sleeping = false;
+#endif
 
 #if defined(OLED_TRANSPORT_SPI)
 #    ifndef OLED_DC_PIN
@@ -758,6 +761,9 @@ bool oled_on(void) {
         }
         oled_active = true;
     }
+#ifdef OLED_ALWAYS_ON
+    oled_sleeping = false;
+#endif
     return oled_active;
 }
 
@@ -766,11 +772,19 @@ bool oled_off(void) {
         return !oled_active;
     }
 
+
+#ifdef OLED_ALWAYS_ON
+    if (!oled_sleeping) {
+        oled_clear();
+        oled_sleeping = true;
+    }
+    return oled_sleeping;
+#else
     static const uint8_t PROGMEM display_off[] =
 #ifdef OLED_FADE_OUT
         {I2C_CMD, FADE_BLINK, ENABLE_FADE | OLED_FADE_OUT_INTERVAL};
 #else
-        {I2C_CMD, DISPLAY_OFF};
+    {I2C_CMD, DISPLAY_OFF};
 #endif
 
     if (oled_active) {
@@ -781,10 +795,15 @@ bool oled_off(void) {
         oled_active = false;
     }
     return !oled_active;
+#endif
 }
 
 bool is_oled_on(void) {
+#ifdef OLED_ALWAYS_ON
+    return oled_active && !oled_sleeping;
+#else
     return oled_active;
+#endif
 }
 
 uint8_t oled_set_brightness(uint8_t level) {
