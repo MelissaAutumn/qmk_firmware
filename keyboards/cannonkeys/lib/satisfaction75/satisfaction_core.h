@@ -52,6 +52,9 @@ enum oled_modes {
   OLED_HID_MODE,
 #endif
   OLED_OFF,
+#ifdef OLED_ALWAYS_ON_DISPLAY_ENABLE
+  OLED_ALWAYS_ON_DISPLAY, // Shouldn't be selectable
+#endif
   _NUM_OLED_MODES
 };
 
@@ -63,6 +66,7 @@ extern uint8_t layer;
 
 // OLED Behavior
 extern uint8_t oled_mode;
+extern uint8_t previous_oled_mode;
 extern bool oled_repaint_requested;
 extern bool oled_wakeup_requested;
 extern uint32_t oled_sleep_timer;

@@ -7,3 +7,4 @@ int oled_hid_get_minute(void);
 void oled_hid_set_time(time_t unix_time);
 // Make it accessible
 char* get_enc_mode(void);
+void oled_always_on_draw(void);

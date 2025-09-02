@@ -235,6 +235,12 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
       if(!clock_set_mode){
         if (record->event.pressed) {
           oled_mode = (oled_mode + 1) % _NUM_OLED_MODES;
+#ifdef OLED_ALWAYS_ON_DISPLAY_ENABLE
+          // Skip OLED_ALWAYS_ON_DISPLAY
+          if (oled_mode == OLED_ALWAYS_ON_DISPLAY) {
+            //oled_mode = (oled_mode + 1) % _NUM_OLED_MODES;
+          }
+#endif
           if (oled_mode == OLED_BONGO || oled_mode == OLED_BONGO_MIN) {
             oled_set_custom_update_interval(BONGO_CAT_UPDATE_INTERVAL);
 		  } else if (oled_mode == OLED_HID_MODE) {

@@ -360,6 +360,9 @@ void oled_clear(void);
 // all.
 void oled_render_dirty(bool all);
 
+// Similar to oled_set_cursor but doesn't multiply by font width
+void oled_set_cursor_by_pixel(uint8_t x, uint8_t y);
+
 // Moves cursor to character position indicated by column and line, wraps if out of bounds
 // Max column denoted by 'oled_max_chars()' and max lines by 'oled_max_lines()' functions
 void oled_set_cursor(uint8_t col, uint8_t line);

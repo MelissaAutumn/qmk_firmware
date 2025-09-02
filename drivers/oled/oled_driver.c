@@ -538,6 +538,17 @@ void oled_render_dirty(bool all) {
     }
 }
 
+void oled_set_cursor_by_pixel(uint8_t x, uint8_t y) {
+    uint16_t index = x + (y / 8) * oled_rotation_width;
+
+    // Out of bounds?
+    if (index >= OLED_MATRIX_SIZE) {
+        index = 0;
+    }
+
+    oled_cursor = &oled_buffer[index];
+}
+
 void oled_set_cursor(uint8_t col, uint8_t line) {
     uint16_t index = line * oled_rotation_width + col * OLED_FONT_WIDTH;
 

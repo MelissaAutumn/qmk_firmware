@@ -27,6 +27,10 @@ void draw_clock(void);
 #include "oled_hid.h"
 #endif
 
+#ifdef OLED_ALWAYS_ON_DISPLAY_ENABLE
+#include "oled_always_on.h"
+#endif
+
 oled_rotation_t oled_init_kb(oled_rotation_t rotation) { return OLED_ROTATION_0; }
 
 bool oled_task_kb(void) {
@@ -59,6 +63,11 @@ bool oled_task_kb(void) {
 		case OLED_HID_MODE:
 			oled_hid_draw();
 			break;
+#endif
+#ifdef OLED_ALWAYS_ON_DISPLAY_ENABLE
+        case OLED_ALWAYS_ON_DISPLAY:
+            oled_always_on_draw();
+            break;
 #endif
     }
     return false;

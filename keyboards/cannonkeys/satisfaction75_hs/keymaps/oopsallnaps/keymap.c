@@ -7,6 +7,9 @@
 #include "raw_hid.h"
 #include "../../lib/satisfaction75/oled_hid.h"
 #endif
+#ifdef OLED_ALWAYS_ON_DISPLAY_ENABLE
+#include "../../lib/satisfaction75/oled_always_on.h"
+#endif
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   [0] = LAYOUT_all(
@@ -20,8 +23,8 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   [1] = LAYOUT_all(
     QK_REBOOT, _______, _______, _______, _______, _______, _______, _______, _______, _______, KC_MEDIA_PREV_TRACK, KC_MEDIA_PLAY_PAUSE, KC_MEDIA_NEXT_TRACK, OLED_TOGG,
     _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
-    _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, CLOCK_SET,
-    _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,          _______, _______,
+    _______, MS_BTN1, MS_UP, MS_BTN2, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, CLOCK_SET,
+    _______, MS_LEFT, MS_DOWN, MS_RGHT, _______, _______, _______, _______, _______, _______, _______, _______,          _______, _______,
     _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
     QK_BOOT, _______, _______,                   _______,                            _______, _______, _______, _______, _______, _______
   )
@@ -37,7 +40,7 @@ void keyboard_post_init_user(void) {
     //debug_mouse=true;
 }
 
-#ifdef OLED_HID_ENABLE
+#if defined(OLED_HID_ENABLE) || defined(OLED_ALWAYS_ON_DISPLAY_ENABLE)
 /*
 Src: https://github.com/fcambus/spleen
 Copyright (c) 2018-2024, Frederic Cambus
@@ -68,6 +71,11 @@ POSSIBILITY OF SUCH DAMAGE.
 #define SPLEEN_DIGITS_LENGTH 11
 #define SPLEEN_DIGITS_SIZE 36
 #define SPLEEN_DIGITS_ROW_SIZE SPLEEN_DIGITS_SIZE / 3
+
+#define SPLEEN_DIGITS_WIDTH 12
+#define SPLEEN_DIGITS_HEIGHT 24
+#define SPLEEN_DIGITS_ROW_HEIGHT SPLEEN_DIGITS_HEIGHT / 3
+
 static const char PROGMEM spleen_digits[SPLEEN_DIGITS_LENGTH][SPLEEN_DIGITS_SIZE] = {
 // 0
 {
@@ -137,12 +145,6 @@ static const char PROGMEM spleen_digits[SPLEEN_DIGITS_LENGTH][SPLEEN_DIGITS_SIZE
 }
 };
 
-
-char test_str[32] = {0};
-int cpu_perc = 0;
-int gpu_perc = 0;
-int ram_perc = 0;
-
 #define PERF_MULT_BY OLED_DISPLAY_HEIGHT / 100.0f
 #define PERF_BAR_WIDTH 4
 
@@ -160,6 +162,94 @@ static inline void draw_large_digit(int idx, int col, int line) {
 	digit_row_ptr += SPLEEN_DIGITS_ROW_SIZE;
 	oled_write_raw(digit_row_ptr, SPLEEN_DIGITS_ROW_SIZE);
 }
+static inline void draw_large_digit_by_pixel(int idx, int x, int y) {
+    const char* digit_row_ptr = spleen_digits[idx];
+
+    oled_set_cursor_by_pixel(x, y);
+
+    oled_write_raw(digit_row_ptr, SPLEEN_DIGITS_ROW_SIZE);
+    oled_set_cursor_by_pixel(x, y+SPLEEN_DIGITS_ROW_HEIGHT);
+
+    digit_row_ptr += SPLEEN_DIGITS_ROW_SIZE;
+    oled_write_raw(digit_row_ptr, SPLEEN_DIGITS_ROW_SIZE);
+    oled_set_cursor_by_pixel(x, y+(SPLEEN_DIGITS_ROW_HEIGHT*2));
+
+    digit_row_ptr += SPLEEN_DIGITS_ROW_SIZE;
+    oled_write_raw(digit_row_ptr, SPLEEN_DIGITS_ROW_SIZE);
+}
+#endif
+
+#ifdef OLED_ALWAYS_ON_DISPLAY_ENABLE
+int clock_pos_x = 0;
+int clock_pos_y = 0;
+int clock_vel_x = 1;
+int clock_vel_y = 1;
+void oled_always_on_draw(void) {
+    // Draw digits
+    int hour = oled_hid_get_hour();
+    int minute = oled_hid_get_minute();
+
+
+
+    clock_pos_x += clock_vel_x;
+    clock_pos_y += clock_vel_y;
+
+#if 0
+    int clock_width = SPLEEN_DIGITS_WIDTH * 5;
+    int clock_height = SPLEEN_DIGITS_HEIGHT;
+
+    if (hour >= 10) {
+        draw_large_digit_by_pixel((hour / 10) % 10, clock_pos_x, clock_pos_y);
+        draw_large_digit_by_pixel(hour % 10, clock_pos_x+SPLEEN_DIGITS_WIDTH, clock_pos_y);
+    } else {
+        draw_large_digit_by_pixel(0, clock_pos_x, clock_pos_y);
+        draw_large_digit_by_pixel(hour % 10, clock_pos_x+SPLEEN_DIGITS_WIDTH, clock_pos_y);
+    }
+
+    // :
+    draw_large_digit_by_pixel(10, clock_pos_x+(SPLEEN_DIGITS_WIDTH * 2), clock_pos_y);
+
+    if (minute >= 10) {
+        draw_large_digit_by_pixel((minute / 10) % 10, clock_pos_x+(SPLEEN_DIGITS_WIDTH * 3), clock_pos_y);
+        draw_large_digit_by_pixel(minute % 10, clock_pos_x+(SPLEEN_DIGITS_WIDTH * 4), clock_pos_y);
+    } else {
+        draw_large_digit_by_pixel(0, clock_pos_x+(SPLEEN_DIGITS_WIDTH * 3), clock_pos_y);
+        draw_large_digit_by_pixel(minute % 10, clock_pos_x+(SPLEEN_DIGITS_WIDTH * 4), clock_pos_y);
+    }
+#else
+    int clock_width = OLED_FONT_WIDTH * 5;
+    int clock_height = OLED_FONT_HEIGHT;
+
+    char buf[32] = {0};
+
+    oled_set_cursor_by_pixel(clock_pos_x, clock_pos_y);
+
+    int hour_1 = hour >= 10 ? hour / 10 : 0;
+    int hour_2 = hour % 10;
+    int min_1 = minute >= 10 ? minute / 10 : 0;
+    int min_2 = minute % 10;
+
+    sprintf(buf, "%d%d:%d%d", hour_1, hour_2, min_1, min_2);
+    oled_write(buf, false);
+
+    oled_set_cursor(3, 10);
+    sprintf(buf, "%d x %d", clock_pos_x, clock_pos_y);
+    oled_write(buf, true);
+
+#endif
+    if (clock_pos_x + clock_width >= OLED_DISPLAY_WIDTH || clock_pos_x <= 0) {
+        clock_vel_x *= -1;
+    }
+    if (clock_pos_y + clock_height >= OLED_DISPLAY_HEIGHT || clock_pos_y <= 0) {
+        clock_vel_y *= -1;
+    }
+}
+#endif
+
+#ifdef OLED_HID_ENABLE
+int cpu_perc = 0;
+int gpu_perc = 0;
+int ram_perc = 0;
 
 void oled_hid_draw(void) {
 //void oled_draw_perf(void) {
@@ -265,11 +355,6 @@ void oled_hid_draw(void) {
     oled_write(get_enc_mode(), true);
 }
 
-void oled_hid_draw_old(void) {
-	oled_set_cursor(0, 0);
-	oled_write_P(test_str, false);
-}
-
 enum OLED_HID_COMMANDS {
 	OLED_HID_NULL = 0x0,
 	OLED_HID_OK = 0x1,
@@ -322,7 +407,6 @@ void raw_hid_receive(uint8_t *data, uint8_t length) {
     response[0] = OLED_HID_OK;
     raw_hid_send(response, length);
 }
-
-
-
 #endif
+
+

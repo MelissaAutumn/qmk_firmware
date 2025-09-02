@@ -60,14 +60,22 @@
 // Enables syncing RTC via a hid command (requires OLED_HID_ENABLE)
 #define HID_TIMESYNC_ENABLE
 
+// TODO: Rename this to like OLED_SLEEP or something!
 // Don't turn the display off
 // In cases where the display would sleep, it's simply cleared
 #define OLED_ALWAYS_ON 1
+// Different from above, lowers brightness and bounces the clock around
+
+#define OLED_ALWAYS_ON_DISPLAY_ENABLE 1
+#define OLED_ALWAYS_ON_DISPLAY_BRIGHTNESS 25
+
 // OLED_TIMEOUT is incompatible with the OLED_OFF mode
 #define OLED_TIMEOUT 0
 
 // OLED timeout reimplemented in the keyboard-specific code
 #define CUSTOM_OLED_TIMEOUT 60000
+
+#define OLED_BRIGHTNESS 204 // 80% brightness
 
 // Custom config starts after VIA's EEPROM usage,
 // dynamic keymaps start after this.
