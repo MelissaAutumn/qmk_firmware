@@ -52,6 +52,7 @@
 #define OLED_UPDATE_INTERVAL 33 // ~30fps
 #define BONGO_CAT_UPDATE_INTERVAL 66 // ~15fps
 #define OLED_HID_UPDATE_INTERVAL 100 // ~10fps
+#define OLED_ALWAYS_ON_DISPLAY_UPDATE_INTERVAL 33 // ~15fps
 
 // Enable bongo cat
 #define BONGO_ENABLE

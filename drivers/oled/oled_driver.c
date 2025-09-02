@@ -147,6 +147,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // and also allows for drawing & inverting
 uint8_t         oled_buffer[OLED_MATRIX_SIZE];
 uint8_t *       oled_cursor;
+uint16_t        oled_pixel_y        = 0; // helps with sub-page calculations
 OLED_BLOCK_TYPE oled_dirty          = 0;
 bool            oled_initialized    = false;
 bool            oled_active         = false;
@@ -540,6 +541,7 @@ void oled_render_dirty(bool all) {
 
 void oled_set_cursor_by_pixel(uint8_t x, uint8_t y) {
     uint16_t index = x + (y / 8) * oled_rotation_width;
+    oled_pixel_y = y;
 
     // Out of bounds?
     if (index >= OLED_MATRIX_SIZE) {
@@ -551,6 +553,7 @@ void oled_set_cursor_by_pixel(uint8_t x, uint8_t y) {
 
 void oled_set_cursor(uint8_t col, uint8_t line) {
     uint16_t index = line * oled_rotation_width + col * OLED_FONT_WIDTH;
+    oled_pixel_y = col * 8;
 
     // Out of bounds?
     if (index >= OLED_MATRIX_SIZE) {
@@ -568,7 +571,7 @@ void oled_advance_page(bool clearPageRemainder) {
         // Remaining Char count
         remaining = remaining / OLED_FONT_WIDTH;
 
-        // Write empty character until next line
+        // Write` empty character until next line
         while (remaining--)
             oled_write_char(' ', false);
     } else {
@@ -620,19 +623,76 @@ void oled_write_char(const char data, bool invert) {
 
     STATIC_ASSERT(sizeof(font) >= ((OLED_FONT_END + 1 - OLED_FONT_START) * OLED_FONT_WIDTH), "OLED_FONT_END references outside array");
 
-    // set the reder buffer data
-    uint8_t cast_data = (uint8_t)data; // font based on unsigned type for index
-    if (cast_data < OLED_FONT_START || cast_data > OLED_FONT_END) {
-        memset(oled_cursor, 0x00, OLED_FONT_WIDTH);
+    uint8_t remaining_bits = oled_pixel_y % 8;
+    if (remaining_bits != 0) {
+        uint8_t cast_data = (uint8_t)data; // font based on unsigned type for index
+        if (cast_data < OLED_FONT_START || cast_data > OLED_FONT_END) {
+
+            // FIXME: Need to re-write this
+            for (uint8_t x = 0; x < OLED_FONT_WIDTH; x++) {
+                for (uint8_t y = 0; y < remaining_bits; y++) {
+                    *oled_cursor &= ~(1 << (y % 8));
+                }
+                oled_cursor++;
+            }
+
+        } else {
+            const uint8_t *glyph = &font[(cast_data - OLED_FONT_START) * OLED_FONT_WIDTH];
+
+            // Grab the next page so we can render the other half of the glyph
+            uint16_t index = (oled_cursor - &oled_buffer[0]) + oled_rotation_width;
+            if (index >= OLED_MATRIX_SIZE) {
+                index = 0;
+            }
+            uint8_t* oled_next_page_cursor = &oled_buffer[index];
+
+            for (uint8_t x = 0; x < OLED_FONT_WIDTH; x++) {
+                const uint8_t current_glyph = glyph[x];
+
+                // Render the top portion of the glyph (current row)
+                for (uint8_t y = remaining_bits; y < 8; y++) {
+                    uint8_t glyph_bit = (current_glyph>>(y-remaining_bits)) & 1;
+                    glyph_bit = invert ? !glyph_bit : glyph_bit;
+
+                    if (glyph_bit) {
+                        *oled_cursor |= (1 << (y % 8));
+                    } else {
+                        *oled_cursor &= ~(1 << (y % 8));
+                    }
+                }
+                // Render the bottom portion of the glyph (next row)
+                for (uint8_t y = 0; y < (uint8_t)oled_pixel_y%8; y++) {
+                    uint8_t glyph_bit = (current_glyph>>((8-remaining_bits)+y)) & 1;
+                    glyph_bit = invert ? !glyph_bit : glyph_bit;
+                    if (glyph_bit) {
+                        *oled_next_page_cursor |= (1 << (y % 8));
+                    } else {
+                        *oled_next_page_cursor &= ~(1 << (y % 8));
+                    }
+                }
+                oled_cursor++;
+                oled_next_page_cursor++;
+            }
+
+            // We'll be advancing to the next page, uhh don't do that.
+            oled_cursor -= OLED_FONT_WIDTH;
+        }
     } else {
-        const uint8_t *glyph = &font[(cast_data - OLED_FONT_START) * OLED_FONT_WIDTH];
-        memcpy_P(oled_cursor, glyph, OLED_FONT_WIDTH);
+        // set the reder buffer data
+        uint8_t cast_data = (uint8_t)data; // font based on unsigned type for index
+        if (cast_data < OLED_FONT_START || cast_data > OLED_FONT_END) {
+            memset(oled_cursor, 0x00, OLED_FONT_WIDTH);
+        } else {
+            const uint8_t *glyph = &font[(cast_data - OLED_FONT_START) * OLED_FONT_WIDTH];
+            memcpy_P(oled_cursor, glyph, OLED_FONT_WIDTH);
+        }
+
+        // Invert if needed
+        if (invert) {
+            InvertCharacter(oled_cursor);
+        }
     }
 
-    // Invert if needed
-    if (invert) {
-        InvertCharacter(oled_cursor);
-    }
 
     // Dirty check
     if (memcmp(&oled_temp_buffer, oled_cursor, OLED_FONT_WIDTH)) {

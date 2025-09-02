@@ -184,6 +184,7 @@ int clock_pos_x = 0;
 int clock_pos_y = 0;
 int clock_vel_x = 1;
 int clock_vel_y = 1;
+bool invert = false;
 void oled_always_on_draw(void) {
     // Draw digits
     int hour = oled_hid_get_hour();
@@ -230,18 +231,16 @@ void oled_always_on_draw(void) {
     int min_2 = minute % 10;
 
     sprintf(buf, "%d%d:%d%d", hour_1, hour_2, min_1, min_2);
-    oled_write(buf, false);
-
-    oled_set_cursor(3, 10);
-    sprintf(buf, "%d x %d", clock_pos_x, clock_pos_y);
-    oled_write(buf, true);
+    oled_write(buf, invert);
 
 #endif
     if (clock_pos_x + clock_width >= OLED_DISPLAY_WIDTH || clock_pos_x <= 0) {
         clock_vel_x *= -1;
+        invert = !invert;
     }
     if (clock_pos_y + clock_height >= OLED_DISPLAY_HEIGHT || clock_pos_y <= 0) {
         clock_vel_y *= -1;
+        invert = !invert;
     }
 }
 #endif
