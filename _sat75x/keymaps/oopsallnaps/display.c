@@ -28,7 +28,7 @@ void display_post_init(void) {
     dprintf("Created display[%p] with [w=%d/h=%d]\n", display, qp_get_width(display), qp_get_height(display));
     display_is_on = true;
 
-    current_mode = DM_TRAIL;
+    current_mode = DM_BONGO;
 
     main_font = qp_load_font_mem(font_pixeloid_mono_9px);
     if (main_font) {
@@ -86,6 +86,9 @@ void display_housekeeping(void) {
     switch (current_mode) {
         case DM_TRAIL:
             scene_wave_trail(display);
+            break;
+        case DM_BONGO:
+            scene_bongo(display, true);
             break;
         default:
             break;

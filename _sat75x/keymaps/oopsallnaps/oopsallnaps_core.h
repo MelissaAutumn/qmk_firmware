@@ -25,6 +25,7 @@ uint32_t get_scan_rate(void);
 enum DISPLAY_MODES {
   DM_DEFAULT,
   DM_TRAIL,
+  DM_BONGO,
   DM_OFF,
   _NUM_DM_MODES
 };
@@ -39,3 +40,4 @@ void display_housekeeping(void);
 // scenes
 
 void scene_wave_trail(painter_device_t display);
+void scene_bongo(painter_device_t display, bool minimal);
