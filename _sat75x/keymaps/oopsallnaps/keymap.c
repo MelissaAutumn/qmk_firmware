@@ -4,6 +4,7 @@
 #include QMK_KEYBOARD_H
 
 #include "print.h"
+#include <qp.h>
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   [0] = LAYOUT_all(
@@ -24,10 +25,79 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   )
 };
 
+
+painter_device_t display = 0;
+
+void board_init(void) {
+  SYSCFG->CFGR1 |= SYSCFG_CFGR1_I2C1_DMA_RMP;
+  SYSCFG->CFGR1 &= ~(SYSCFG_CFGR1_SPI2_DMA_RMP);
+}
+
+
+void keyboard_post_init_kb(void) {
+  debug_enable=true;
+  printf("[oopsallnaps] keyboard_post_init_user ran !\n");
+
+  display = qp_sh1106_make_i2c_device(128, 64, 0x3C);
+  if (!display) {
+    printf("[oopsallnaps] failed to make oled display !\n");
+  }
+  if (!qp_init(display, QP_ROTATION_0)) {
+    printf("[oopsallnaps] failed to init oled display !\n");
+  }
+
+  dprintf("Created display[%p] with [w=%d/h=%d]\n", display, qp_get_width(display), qp_get_height(display));
+
+  qp_rect(display, 0, 0, 128, 32, 255, 255, 128, true);
+  qp_rect(display, 4, 4, 124, 28, 0, 0, 0, true);
+  qp_flush(display);
+}
+
+static uint8_t last_backlight = 255;
+void suspend_power_down_user(void) {
+    if (!display) {
+      return;
+    }
+    //if (last_backlight == 255) {
+    //    last_backlight = get_backlight_level();
+    //}
+    //backlight_set(0);
+    //rgb_matrix_set_suspend_state(true);
+    qp_power(display, false);
+}
+
+void suspend_wakeup_init_user(void) {
+    if (!display) {
+      return;
+    }
+    qp_power(display, true);
+    //rgb_matrix_set_suspend_state(false);
+    //if (last_backlight != 255) {
+    //    backlight_set(last_backlight);
+    //}
+    last_backlight = 255;
+}
+
+void housekeeping_task_user(void) {
+    return;
+    if (!display) {
+      return;
+    }
+    static uint32_t last_draw = 0;
+    if (timer_elapsed32(last_draw) > 33) { // Throttle to 30fps
+        last_draw = timer_read32();
+        // Draw 8px-wide rainbow down the left side of the display
+        qp_rect(display, 16, 0, 32, 64, 64, 255, 255, true);
+        qp_flush(display);
+    }
+}
+
+#if 0
 // oled_init seems pretty slow, give it some extra time to warm up
 static uint32_t i2c_timeout = 500;
 
 void keyboard_post_init_user(void) {
+  debug_enable=true;
   printf("[oopsallnaps] keyboard_post_init_user ran !\n");
 
   // We're after oled_init so set it to the normal timeout!
@@ -69,3 +139,4 @@ bool oled_send_cmd(const uint8_t *data, uint16_t size) {
 
   return (status == I2C_STATUS_SUCCESS);
 }
+#endif

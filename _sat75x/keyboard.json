@@ -12,6 +12,7 @@
     "features": {
         "bootmagic": true,
         "console": true,
+        "command": true,
         "encoder": true,
         "extrakey": true,
         "mousekey": true,

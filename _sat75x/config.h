@@ -32,6 +32,8 @@
 // OLED timeout reimplemented in the keyboard-specific code
 #define CUSTOM_OLED_TIMEOUT 60000
 
+#define OLED_BRIGHTNESS 204 // 80% brightness
+
 // Custom config Usage:
 // 1 for enabled encoder modes (1 byte)
 // 1 for OLED default mode (1 byte)
@@ -40,3 +42,5 @@
 
 // VIA lighting is handled by the keyboard-level code
 #define VIA_CUSTOM_LIGHTING_ENABLE
+
+// QP
