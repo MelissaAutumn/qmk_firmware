@@ -3,8 +3,8 @@
 
 #include QMK_KEYBOARD_H
 
-#include "print.h"
-#include <qp.h>
+#include "oopsallnaps_core.h"
+#include "printf.h"
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   [0] = LAYOUT_all(
@@ -25,118 +25,45 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   )
 };
 
+static uint32_t matrix_timer           = 0;
+static uint32_t matrix_scan_count      = 0;
+static uint32_t last_matrix_scan_count = 0;
 
-painter_device_t display = 0;
+void track_scan_rate(void) {
+    matrix_scan_count++;
+
+    uint32_t timer_now = timer_read32();
+    if (TIMER_DIFF_32(timer_now, matrix_timer) >= 1000) {
+        last_matrix_scan_count = matrix_scan_count;
+        matrix_timer           = timer_now;
+        matrix_scan_count      = 0;
+    }
+}
+
+uint32_t get_scan_rate(void) {
+    return last_matrix_scan_count;
+}
 
 void board_init(void) {
   SYSCFG->CFGR1 |= SYSCFG_CFGR1_I2C1_DMA_RMP;
   SYSCFG->CFGR1 &= ~(SYSCFG_CFGR1_SPI2_DMA_RMP);
 }
 
-
-void keyboard_post_init_kb(void) {
-  debug_enable=true;
-  printf("[oopsallnaps] keyboard_post_init_user ran !\n");
-
-  display = qp_sh1106_make_i2c_device(128, 64, 0x3C);
-  if (!display) {
-    printf("[oopsallnaps] failed to make oled display !\n");
-  }
-  if (!qp_init(display, QP_ROTATION_0)) {
-    printf("[oopsallnaps] failed to init oled display !\n");
-  }
-
-  dprintf("Created display[%p] with [w=%d/h=%d]\n", display, qp_get_width(display), qp_get_height(display));
-
-  qp_rect(display, 0, 0, 128, 32, 255, 255, 128, true);
-  qp_rect(display, 4, 4, 124, 28, 0, 0, 0, true);
-  qp_flush(display);
-}
-
-static uint8_t last_backlight = 255;
-void suspend_power_down_user(void) {
-    if (!display) {
-      return;
-    }
-    //if (last_backlight == 255) {
-    //    last_backlight = get_backlight_level();
-    //}
-    //backlight_set(0);
-    //rgb_matrix_set_suspend_state(true);
-    qp_power(display, false);
-}
-
-void suspend_wakeup_init_user(void) {
-    if (!display) {
-      return;
-    }
-    qp_power(display, true);
-    //rgb_matrix_set_suspend_state(false);
-    //if (last_backlight != 255) {
-    //    backlight_set(last_backlight);
-    //}
-    last_backlight = 255;
-}
-
-void housekeeping_task_user(void) {
-    return;
-    if (!display) {
-      return;
-    }
-    static uint32_t last_draw = 0;
-    if (timer_elapsed32(last_draw) > 33) { // Throttle to 30fps
-        last_draw = timer_read32();
-        // Draw 8px-wide rainbow down the left side of the display
-        qp_rect(display, 16, 0, 32, 64, 64, 255, 255, true);
-        qp_flush(display);
-    }
-}
-
-#if 0
-// oled_init seems pretty slow, give it some extra time to warm up
-static uint32_t i2c_timeout = 500;
-
 void keyboard_post_init_user(void) {
   debug_enable=true;
   printf("[oopsallnaps] keyboard_post_init_user ran !\n");
-
-  // We're after oled_init so set it to the normal timeout!
-  i2c_timeout = OLED_I2C_TIMEOUT;
+  display_post_init();
 }
 
-#include "i2c_master.h"
-
-// oled commands from oled_driver.c
-#define DISPLAY_ON 0xAF
-#define DISPLAY_OFF 0xAE
-
-// Use a really short time to avoid blocking for the entire timeout length
-#define OLED_FORCE_TIMEOUT 1
-
-bool oled_send_cmd(const uint8_t *data, uint16_t size) {
-  i2c_status_t status;
-
-  // Display on and display off commands don't seem to work on their first try. 
-  // I suspect something might need to be reset, but forcing a timeout and trying again works well enough.
-  if (size == sizeof(uint8_t) * 2 && (data[1] == DISPLAY_ON || data[1] == DISPLAY_OFF) ) {
-    status = i2c_transmit((OLED_DISPLAY_ADDRESS << 1), data, size, OLED_FORCE_TIMEOUT);
-
-    // If we somehow succeed exit here.
-    if (status == I2C_STATUS_SUCCESS) {
-      dprintf("[oopsallnaps.oled_send_cmd] intentionally timing out and somehow succeeded (%d) with timeout of %d\n", status, OLED_FORCE_TIMEOUT);
-
-      return true;
-    }
-  }
-
-  status = i2c_transmit((OLED_DISPLAY_ADDRESS << 1), data, size, i2c_timeout);
-
-  // If we timed out, try again immediately...
-  if (status == I2C_STATUS_TIMEOUT) {
-    status = i2c_transmit((OLED_DISPLAY_ADDRESS << 1), data, size, i2c_timeout);
-    dprintf("[oopsallnaps.oled_send_cmd] returned = %d with timeout of %ld\n", status, i2c_timeout);
-  }
-
-  return (status == I2C_STATUS_SUCCESS);
+void suspend_power_down_user(void) {
+    display_powerdown();
 }
-#endif
+
+void suspend_wakeup_init_user(void) {
+    display_wakeup();
+}
+
+void housekeeping_task_user(void) {
+    track_scan_rate();
+    display_housekeeping();
+}

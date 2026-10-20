@@ -17,7 +17,7 @@
         "extrakey": true,
         "mousekey": true,
         "nkro": true,
-        "oled": true
+        "oled": false
     },
     "indicators": {
         "caps_lock": "B14",

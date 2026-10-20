@@ -17,22 +17,36 @@
 #define I2C1_SDA_PIN B7
 #define I2C1_SCL_PAL_MODE 1
 #define I2C1_SDA_PAL_MODE 1
+
+#define DEFAULT_TIMINGS 1
+//#define STANDARD_TIMINGS 1
+//#define FAST_TIMINGS 1
+
+#if defined(DEFAULT_TIMINGS)
+// ???
 #define I2C1_TIMINGR_PRESC 0x00U
 #define I2C1_TIMINGR_SCLDEL 0x03U
 #define I2C1_TIMINGR_SDADEL 0x01U
 #define I2C1_TIMINGR_SCLH 0x03U
 #define I2C1_TIMINGR_SCLL 0x09U
-
-// configure oled driver for the 128x32 oled
-#define OLED_UPDATE_INTERVAL 66 // ~15fps
-
-// OLED_TIMEOUT is incompatible with the OLED_OFF mode
-#define OLED_TIMEOUT 0
+#elif defined(FAST_TIMINGS)
+// Fast timings (400-100-100)
+#define I2C1_TIMINGR_PRESC 0x00U
+#define I2C1_TIMINGR_SCLDEL 0x00U
+#define I2C1_TIMINGR_SDADEL 0x01U
+#define I2C1_TIMINGR_SCLH 0x02U
+#define I2C1_TIMINGR_SCLL 0x0AU
+#elif defined(STANDARD_TIMINGS)
+// Standard timings (100-100-100)
+#define I2C1_TIMINGR_PRESC 0x00U
+#define I2C1_TIMINGR_SCLDEL 0x02U
+#define I2C1_TIMINGR_SDADEL 0x00U
+#define I2C1_TIMINGR_SCLH 0x1DU
+#define I2C1_TIMINGR_SCLL 0x2BU
+#endif
 
 // OLED timeout reimplemented in the keyboard-specific code
 #define CUSTOM_OLED_TIMEOUT 60000
-
-#define OLED_BRIGHTNESS 204 // 80% brightness
 
 // Custom config Usage:
 // 1 for enabled encoder modes (1 byte)
@@ -44,3 +58,9 @@
 #define VIA_CUSTOM_LIGHTING_ENABLE
 
 // QP
+#define QP_SCANRATE_THRESHOLD 250 // Turn off display if we're under this amount of scans
+#define QP_TIMEOUT 30000
+#define QP_UPDATE_INTERVAL 66 // ~15fps
+#define QUANTUM_PAINTER_DISPLAY_TIMEOUT 0 // no auto timeout
+
+#define DEBUG_MATRIX_SCAN_RATE
