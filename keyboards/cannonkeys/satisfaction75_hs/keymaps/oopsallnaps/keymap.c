@@ -36,14 +36,36 @@ void keyboard_post_init_user(void) {
 
 #include "i2c_master.h"
 
+// oled commands from oled_driver.c
+#define DISPLAY_ON 0xAF
+#define DISPLAY_OFF 0xAE
+
+// Use a really short time to avoid blocking for the entire timeout length
+#define OLED_FORCE_TIMEOUT 1
+
 bool oled_send_cmd(const uint8_t *data, uint16_t size) {
-    i2c_status_t status = i2c_transmit((OLED_DISPLAY_ADDRESS << 1), data, size, i2c_timeout);
-    // If we timed out, try again immediately...
-    if (status == I2C_STATUS_TIMEOUT) {
-      status = i2c_transmit((OLED_DISPLAY_ADDRESS << 1), data, size, i2c_timeout);
-      dprintf("[oopsallnaps.oled_send_cmd] returned = %d with timeout of %ld\n", status, i2c_timeout);
+  i2c_status_t status;
 
+  // Display on and display off commands don't seem to work on their first try. 
+  // I suspect something might need to be reset, but forcing a timeout and trying again works well enough.
+  if (size == sizeof(uint8_t) * 2 && (data[1] == DISPLAY_ON || data[1] == DISPLAY_OFF) ) {
+    status = i2c_transmit((OLED_DISPLAY_ADDRESS << 1), data, size, OLED_FORCE_TIMEOUT);
+
+    // If we somehow succeed exit here.
+    if (status == I2C_STATUS_SUCCESS) {
+      dprintf("[oopsallnaps.oled_send_cmd] intentionally timing out and somehow succeeded (%d) with timeout of %d\n", status, OLED_FORCE_TIMEOUT);
+
+      return true;
     }
+  }
 
-    return (status == I2C_STATUS_SUCCESS);
+  status = i2c_transmit((OLED_DISPLAY_ADDRESS << 1), data, size, i2c_timeout);
+
+  // If we timed out, try again immediately...
+  if (status == I2C_STATUS_TIMEOUT) {
+    status = i2c_transmit((OLED_DISPLAY_ADDRESS << 1), data, size, i2c_timeout);
+    dprintf("[oopsallnaps.oled_send_cmd] returned = %d with timeout of %ld\n", status, i2c_timeout);
+  }
+
+  return (status == I2C_STATUS_SUCCESS);
 }
