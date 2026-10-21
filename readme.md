@@ -1,4 +1,21 @@
-# Quantum Mechanical Keyboard Firmware
+# Oopsallnaps QMK Edition
+
+This repository contains personal fixes, edits, and hacks for personal use. Main branch is usually what I'm running on my [Sat75 X](https://cannonkeys.com/products/sat75-x). 
+
+## Notable branches
+
+* [sat75x-new](https://github.com/MelissaAutumn/qmk_firmware/tree/sat75x-new) - The newer betterer oled driver fix.
+* [sat75x/main](https://github.com/MelissaAutumn/qmk_firmware/tree/sat75x/main) - The original codebase with oled driver hacks and personal adjustments.
+* [sat75x-new-qp](https://github.com/MelissaAutumn/qmk_firmware/tree/sat75x-new-qp) - **This branch**
+
+## Changes
+
+* Swapped out OLED driver for the quantum painter api
+* Added sine wave trail, bouncing (dvd-like) clock, and qp-bongo cat
+* Re-worked essentially all of the code
+* It's really messy, sorry.
+
+## Original Readme
 
 [![Current Version](https://img.shields.io/github/tag/qmk/qmk_firmware.svg)](https://github.com/qmk/qmk_firmware/tags)
 [![Discord](https://img.shields.io/discord/440868230475677696.svg)](https://discord.gg/qmk)
