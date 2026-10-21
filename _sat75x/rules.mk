@@ -6,7 +6,10 @@ VPATH += keyboards/cannonkeys/lib/satisfaction75
 #      satisfaction_oled.c \
 #      satisfaction_core.c 
 SRC += oopsallnaps_ssd1306.c \
+	oopsallnaps_encoder.c \
 	display.c \
+	scenes/clock.c \
+	scenes/set_clock.c \
 	scenes/trails.c \
 	scenes/bongo.c \
 	fonts/pixeloid_mono_9px.qff.c \

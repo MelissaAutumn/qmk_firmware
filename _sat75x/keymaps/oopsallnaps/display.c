@@ -3,13 +3,12 @@
 #include <qp.h>
 #include <math.h>
 #include <printf.h>
+#include <stdint.h>
 
 static painter_device_t display       = 0;
 bool                    display_is_on = false;
-static uint8_t          current_mode  = DM_OFF;
-//static painter_font_handle_t large_font = NULL;
-static painter_font_handle_t main_font = NULL;
-
+// static painter_font_handle_t large_font = NULL;
+painter_font_handle_t main_font = NULL;
 
 bool should_draw(void) {
     return display_is_on;
@@ -28,35 +27,66 @@ void display_post_init(void) {
     dprintf("Created display[%p] with [w=%d/h=%d]\n", display, qp_get_width(display), qp_get_height(display));
     display_is_on = true;
 
-    current_mode = DM_BONGO;
-    setup_bongo();
-
     main_font = qp_load_font_mem(font_pixeloid_mono_9px);
     if (main_font) {
-        static const char *text = "Booting!";
-        int16_t width = qp_textwidth(main_font, text);
-        qp_drawtext(display, ((DISPLAY_WIDTH/2) - (width/2)), ((DISPLAY_HEIGHT/2) - (main_font->line_height/2)), main_font, text);
+        static const char *text  = "Booting!";
+        int16_t            width = qp_textwidth(main_font, text);
+        qp_drawtext(display, ((DISPLAY_WIDTH / 2) - (width / 2)), ((DISPLAY_HEIGHT / 2) - (main_font->line_height / 2)), main_font, text);
     }
+
+    // Setup our default dm_mode!
+    change_dm_mode(dm_mode);
 }
 
 void display_powerdown(void) {
-    if (!display) {
-        printf("[display_powerdown] no display??\n");
+    if (!display || !display_is_on) {
         return;
     }
     qp_power(display, false);
     display_is_on = false;
-    printf("[display_powerdown] display is off\n");
 }
 
 void display_wakeup(void) {
-    if (!display) {
-        printf("[display_wakeup] no display??\n");
+    if (!display || display_is_on) {
         return;
     }
     qp_power(display, true);
     display_is_on = true;
-    printf("[display_wakeup] display is off\n");
+}
+
+void change_dm_mode(uint8_t new_mode) {
+    switch (dm_mode) {
+        case DM_CLOCK:
+            teardown_clock();
+            break;
+        case DM_TRAIL:
+            teardown_wave_trail();
+            break;
+        case DM_BONGO:
+            teardown_bongo();
+            break;
+        default:
+            break;
+    }
+
+    switch (new_mode) {
+        case DM_CLOCK:
+            setup_clock();
+            break;
+        case DM_TRAIL:
+            setup_wave_trail();
+            break;
+        case DM_BONGO:
+            setup_bongo();
+            break;
+        case DM_OFF:
+            qp_clear(display);
+            break;
+        default:
+            break;
+    }
+
+    dm_mode = new_mode;
 }
 
 void display_housekeeping(void) {
@@ -75,12 +105,22 @@ void display_housekeeping(void) {
         return;
     }
 
-    switch (current_mode) {
+    if (clock_set_mode) {
+        scene_set_clock(display);
+        return;
+    }
+
+    switch (dm_mode) {
+        case DM_CLOCK:
+            scene_clock(display);
+            break;
         case DM_TRAIL:
             scene_wave_trail(display);
             break;
         case DM_BONGO:
             scene_bongo(display, true);
+            break;
+        case DM_OFF:
             break;
         default:
             break;
