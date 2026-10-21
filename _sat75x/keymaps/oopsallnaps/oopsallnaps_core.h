@@ -39,5 +39,10 @@ void display_housekeeping(void);
 
 // scenes
 
+void setup_wave_trail(void);
+void teardown_wave_trail(void);
 void scene_wave_trail(painter_device_t display);
+
+void setup_bongo(void);
+void teardown_bongo(void);
 void scene_bongo(painter_device_t display, bool minimal);

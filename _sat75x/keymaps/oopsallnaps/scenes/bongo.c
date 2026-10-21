@@ -443,7 +443,6 @@ void eval_anim_state(void) {
     }
 }
 
-static bool                   is_setup                = false;
 static painter_image_handle_t bongo_minimal_idle      = NULL;
 static painter_image_handle_t bongo_minimal_prep      = NULL;
 static painter_image_handle_t bongo_minimal_tap_left  = NULL;
@@ -453,21 +452,6 @@ static deferred_token idle_animation_token      = INVALID_DEFERRED_TOKEN;
 static deferred_token prep_animation_token      = INVALID_DEFERRED_TOKEN;
 static deferred_token tap_left_animation_token  = INVALID_DEFERRED_TOKEN;
 static deferred_token tap_right_animation_token = INVALID_DEFERRED_TOKEN;
-
-void setup_bongo(void) {
-    if (!bongo_minimal_idle) {
-        bongo_minimal_idle = qp_load_image_mem(gfx_bongo_minimal_idle);
-    }
-    if (!bongo_minimal_prep) {
-        bongo_minimal_prep = qp_load_image_mem(gfx_prep_minimal_0);
-    }
-    if (!bongo_minimal_tap_left) {
-        bongo_minimal_tap_left = qp_load_image_mem(gfx_tap_minimal_1);
-    }
-    if (!bongo_minimal_tap_right) {
-        bongo_minimal_tap_right = qp_load_image_mem(gfx_tap_minimal_0);
-    }
-}
 
 void stop_animation(deferred_token except_for) {
     if (idle_animation_token != except_for && idle_animation_token != INVALID_DEFERRED_TOKEN) {
@@ -488,42 +472,79 @@ void stop_animation(deferred_token except_for) {
     }
 }
 
-void scene_bongo(painter_device_t display, bool minimal) {
-    eval_anim_state();
-
-    if (!is_setup) {
-        setup_bongo();
-        is_setup = true;
+void setup_bongo(void) {
+    if (!bongo_minimal_idle) {
+        bongo_minimal_idle = qp_load_image_mem(gfx_bongo_minimal_idle);
     }
+    if (!bongo_minimal_prep) {
+        bongo_minimal_prep = qp_load_image_mem(gfx_prep_minimal_0);
+    }
+    if (!bongo_minimal_tap_left) {
+        bongo_minimal_tap_left = qp_load_image_mem(gfx_tap_minimal_1);
+    }
+    if (!bongo_minimal_tap_right) {
+        bongo_minimal_tap_right = qp_load_image_mem(gfx_tap_minimal_0);
+    }
+}
 
-    switch (anim_state) {
-        case Idle:
-            if (idle_animation_token == INVALID_DEFERRED_TOKEN && bongo_minimal_idle) {
-                idle_animation_token = qp_animate(display, 0, 0, bongo_minimal_idle);
-                stop_animation(idle_animation_token);
+void teardown_bongo(void) {
+    stop_animation(0);
+    if (bongo_minimal_idle) {
+        qp_close_image(bongo_minimal_idle);
+        bongo_minimal_idle = NULL;
+    }
+    if (bongo_minimal_prep) {
+        qp_close_image(bongo_minimal_prep);
+        bongo_minimal_prep = NULL;
+    }
+    if (bongo_minimal_tap_left) {
+        qp_close_image(bongo_minimal_tap_left);
+        bongo_minimal_tap_left = NULL;
+    }
+    if (bongo_minimal_tap_right) {
+        qp_close_image(bongo_minimal_tap_right);
+        bongo_minimal_tap_right = NULL;
+    }
+}
+
+void scene_bongo(painter_device_t display, bool minimal) {
+    static uint32_t last_draw = 0;
+
+    if (timer_elapsed32(last_draw) > QP_UPDATE_INTERVAL) {
+        last_draw = timer_read32();
+
+        eval_anim_state();
+
+        switch (anim_state) {
+            case Idle:
+                if (idle_animation_token == INVALID_DEFERRED_TOKEN && bongo_minimal_idle) {
+                    idle_animation_token = qp_animate(display, 0, 0, bongo_minimal_idle);
+                    stop_animation(idle_animation_token);
+                }
+                break;
+            case Prep: {
+                if (prep_animation_token == INVALID_DEFERRED_TOKEN && bongo_minimal_prep) {
+                    prep_animation_token = qp_animate(display, 0, 0, bongo_minimal_prep);
+                    stop_animation(prep_animation_token);
+                }
+
+            } break;
+            case Tap: {
+                if (current_tap_frame == 0 && tap_left_animation_token == INVALID_DEFERRED_TOKEN && bongo_minimal_tap_left) {
+                    tap_left_animation_token = qp_animate(display, 0, 0, bongo_minimal_tap_left);
+                    stop_animation(tap_left_animation_token);
+                } else if (current_tap_frame != 0 && tap_right_animation_token == INVALID_DEFERRED_TOKEN && bongo_minimal_tap_right) {
+                    tap_right_animation_token = qp_animate(display, 0, 0, bongo_minimal_tap_right);
+                    stop_animation(tap_right_animation_token);
+                }
+                current_tap_frame = (current_tap_frame + 1) % TAP_FRAMES;
+
             }
+
             break;
-        case Prep: {
-            if (prep_animation_token == INVALID_DEFERRED_TOKEN && bongo_minimal_prep) {
-                prep_animation_token = qp_animate(display, 0, 0, bongo_minimal_prep);
-                stop_animation(prep_animation_token);
-            }
-
-        } break;
-        case Tap: {
-            if (current_tap_frame == 0 && tap_left_animation_token == INVALID_DEFERRED_TOKEN && bongo_minimal_tap_left) {
-                tap_left_animation_token = qp_animate(display, 0, 0, bongo_minimal_tap_left);
-                stop_animation(tap_left_animation_token);
-            } else if (current_tap_frame != 0 && tap_right_animation_token == INVALID_DEFERRED_TOKEN && bongo_minimal_tap_right)
-                tap_right_animation_token = qp_animate(display, 0, 0, bongo_minimal_tap_right);
-            stop_animation(tap_right_animation_token);
+            default:
+                break;
         }
-
-            current_tap_frame = (current_tap_frame + 1) % TAP_FRAMES;
-
-            break;
-        default:
-            break;
     }
 
 #if 0

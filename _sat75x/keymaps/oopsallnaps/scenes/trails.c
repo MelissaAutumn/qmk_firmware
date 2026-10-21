@@ -3,6 +3,14 @@
 #include <math.h>
 #include <printf.h>
 
+void setup_wave_trail(void) {
+    return;
+}
+
+void teardown_wave_trail(void) {
+    return;
+}
+
 void scene_wave_trail(painter_device_t display) {
     uint32_t     amp   = 10;
     float        freq  = 0.15;
@@ -22,7 +30,6 @@ void scene_wave_trail(painter_device_t display) {
         y += 8; // Offset the height so we'e sort of in the middle of the display
 
         qp_clear(display);
-
 
         wave_demo_x[wave_demo_idx]   = last_x;
         wave_demo_y[wave_demo_idx++] = y;

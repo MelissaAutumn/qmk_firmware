@@ -29,6 +29,7 @@ void display_post_init(void) {
     display_is_on = true;
 
     current_mode = DM_BONGO;
+    setup_bongo();
 
     main_font = qp_load_font_mem(font_pixeloid_mono_9px);
     if (main_font) {
@@ -73,15 +74,6 @@ void display_housekeeping(void) {
         dprintf("Scan rate under %d, skipping!\n", QP_SCANRATE_THRESHOLD);
         return;
     }
-
-    /*
-    if (main_font && scan_rate % 100) {
-        char text[32] = {""};
-        sprintf(text, "SCANS: %ld", scan_rate);
-        //int16_t width = qp_textwidth(main_font, text);
-        qp_drawtext(display, 0, 0, main_font, text);
-    }
-    */
 
     switch (current_mode) {
         case DM_TRAIL:
