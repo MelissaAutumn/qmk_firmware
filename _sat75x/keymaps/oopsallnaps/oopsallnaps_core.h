@@ -55,6 +55,11 @@ uint32_t get_scan_rate(void);
  * DISPLAY
  */
 
+typedef struct {
+    uint8_t x;
+    uint8_t y;
+} vec2;
+
 extern painter_font_handle_t main_font;
 
 #define DISPLAY_WIDTH_ACTUAL 128
@@ -77,13 +82,8 @@ void display_housekeeping(void);
  * Custom QP commands
  */
 
-typedef struct {
-    uint8_t x;
-    uint8_t y;
-} draw_sequence;
-
 bool set_display_contrast(painter_device_t display, uint8_t val);
-bool batch_setpixel(painter_device_t device, const draw_sequence *sequence, size_t sequence_len);
+bool batch_setpixel(painter_device_t device, const vec2 *sequence, size_t sequence_len, uint8_t offset_x, uint8_t offset_y);
 
 /*
  * SCENES
@@ -93,7 +93,7 @@ void setup_clock(void);
 void teardown_clock(void);
 void scene_clock(painter_device_t display);
 
-void setup_wave_trail(void);
+void setup_wave_trail(painter_device_t display);
 void teardown_wave_trail(void);
 void scene_wave_trail(painter_device_t display);
 

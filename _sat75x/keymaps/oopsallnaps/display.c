@@ -79,7 +79,7 @@ void change_dm_mode(uint8_t new_mode) {
             setup_clock();
             break;
         case DM_TRAIL:
-            setup_wave_trail();
+            setup_wave_trail(display);
             break;
         case DM_BONGO:
             setup_bongo();
