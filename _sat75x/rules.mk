@@ -7,6 +7,7 @@ VPATH += keyboards/cannonkeys/lib/satisfaction75
 #      satisfaction_core.c 
 SRC += oopsallnaps_ssd1306.c \
 	oopsallnaps_encoder.c \
+	oopsallnaps_qp.c \
 	display.c \
 	scenes/clock.c \
 	scenes/set_clock.c \

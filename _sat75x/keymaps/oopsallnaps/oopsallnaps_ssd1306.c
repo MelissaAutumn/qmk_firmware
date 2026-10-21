@@ -51,7 +51,7 @@ bool qp_sh1106_init(painter_device_t device, painter_rotation_t rotation) {
         SH1106_SET_SEGMENT_REMAP_INV,   0,  0,
         SH1106_COM_SCAN_DIR_DEC,        0,  0,
         SH1106_COM_PADS_HW_CFG,         0,  1, 0x12,
-        SH1106_SET_CONTRAST,            0,  1, 0x7F,
+        SH1106_SET_CONTRAST,            0,  1, 0x10,
         SH1106_ALL_ON_RESUME,           0,  0,
         SH1106_NON_INVERTING_DISPLAY,   0,  0,
         SH1106_SET_OSC_DIVFREQ,         0,  1, 0x80,

@@ -59,7 +59,7 @@
 #define VIA_CUSTOM_LIGHTING_ENABLE
 
 // QP
-#define QP_SCANRATE_THRESHOLD 250 // Turn off display if we're under this amount of scans
+#define QP_SCANRATE_THRESHOLD 200 // Turn off display if we're under this amount of scans
 #define QP_TIMEOUT 30000
 #define QP_UPDATE_INTERVAL 66 // ~15fps
 #define QUANTUM_PAINTER_DISPLAY_TIMEOUT 0 // no auto timeout

@@ -1,14 +1,17 @@
 #include "oopsallnaps_core.h"
 
 #include <qp.h>
-#include <math.h>
 #include <printf.h>
 #include <stdint.h>
+#include <stdio.h>
 
 static painter_device_t display       = 0;
 bool                    display_is_on = false;
 // static painter_font_handle_t large_font = NULL;
 painter_font_handle_t main_font = NULL;
+
+const char *low_scan_rate_warning  = "[!]";
+bool has_low_scan_rate_warning_drawn = false;
 
 bool should_draw(void) {
     return display_is_on;
@@ -36,6 +39,8 @@ void display_post_init(void) {
 
     // Setup our default dm_mode!
     change_dm_mode(dm_mode);
+
+    
 }
 
 void display_powerdown(void) {
@@ -101,8 +106,17 @@ void display_housekeeping(void) {
 
     // If we're hit with terrible performance, just turn it off!
     if (scan_rate < QP_SCANRATE_THRESHOLD) {
-        dprintf("Scan rate under %d, skipping!\n", QP_SCANRATE_THRESHOLD);
+        //dprintf("Scan rate under %d, skipping!\n", QP_SCANRATE_THRESHOLD);
+        if (!has_low_scan_rate_warning_drawn) {
+            qp_drawtext(display, 0, 0, main_font, low_scan_rate_warning);
+            has_low_scan_rate_warning_drawn = true;
+        }
         return;
+    }
+
+    if (has_low_scan_rate_warning_drawn) {
+        qp_clear(display);
+        has_low_scan_rate_warning_drawn = false;
     }
 
     if (clock_set_mode) {

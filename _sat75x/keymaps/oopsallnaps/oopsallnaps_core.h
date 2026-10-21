@@ -7,14 +7,12 @@
 #include "fonts/pixeloid_mono_9px.qff.h"
 #include "fonts/pixeloid_mono_18px.qff.h"
 
-
 #include <hal.h>
 #include "satisfaction_keycodes.h"
 
 /*
  * CORE
  */
-
 
 #define EEPROM_ENABLED_ENCODER_MODES_OFFSET 0
 #define EEPROM_DEFAULT_OLED_OFFSET 1
@@ -24,12 +22,12 @@
 extern volatile uint8_t led_numlock;
 extern volatile uint8_t led_capslock;
 extern volatile uint8_t led_scrolllock;
-extern uint8_t layer;
+extern uint8_t          layer;
 
 // OLED Behavior
-extern uint8_t dm_mode;
-extern bool oled_repaint_requested;
-extern bool oled_wakeup_requested;
+extern uint8_t  dm_mode;
+extern bool     oled_repaint_requested;
+extern bool     oled_wakeup_requested;
 extern uint32_t oled_sleep_timer;
 
 // Encoder Behavior
@@ -39,16 +37,16 @@ extern uint8_t enabled_encoder_modes;
 
 // RTC
 extern RTCDateTime last_timespec;
-extern uint16_t last_minute;
+extern uint16_t    last_minute;
 
 // RTC Configuration
-extern bool clock_set_mode;
+extern bool    clock_set_mode;
 extern uint8_t time_config_idx;
-extern int8_t hour_config;
+extern int8_t  hour_config;
 extern int16_t minute_config;
-extern int8_t year_config;
-extern int8_t month_config;
-extern int8_t day_config;
+extern int8_t  year_config;
+extern int8_t  month_config;
+extern int8_t  day_config;
 extern uint8_t previous_encoder_mode;
 
 uint32_t get_scan_rate(void);
@@ -74,6 +72,18 @@ void display_post_init(void);
 void display_powerdown(void);
 void display_wakeup(void);
 void display_housekeeping(void);
+
+/*
+ * Custom QP commands
+ */
+
+typedef struct {
+    uint8_t x;
+    uint8_t y;
+} draw_sequence;
+
+bool set_display_contrast(painter_device_t display, uint8_t val);
+bool batch_setpixel(painter_device_t device, const draw_sequence *sequence, size_t sequence_len);
 
 /*
  * SCENES
@@ -113,20 +123,16 @@ enum encoder_modes {
     ENC_MODE_CLOCK_SET // This shouldn't be included in the default modes, so we put it after NUM_ENCODER_MODES
 };
 
-enum custom_encoder_behavior {
-    ENC_CUSTOM_CW,
-    ENC_CUSTOM_CCW,
-    ENC_CUSTOM_PRESS
-};
+enum custom_encoder_behavior { ENC_CUSTOM_CW, ENC_CUSTOM_CCW, ENC_CUSTOM_PRESS };
 
-void pre_encoder_mode_change(void);
-void post_encoder_mode_change(void);
-void change_encoder_mode(bool negative);
+void     pre_encoder_mode_change(void);
+void     post_encoder_mode_change(void);
+void     change_encoder_mode(bool negative);
 uint16_t handle_encoder_clockwise(void);
 uint16_t handle_encoder_ccw(void);
 uint16_t handle_encoder_press(void);
 uint16_t retrieve_custom_encoder_config(uint8_t encoder_idx, uint8_t behavior);
-void set_custom_encoder_config(uint8_t encoder_idx, uint8_t behavior, uint16_t new_code);
+void     set_custom_encoder_config(uint8_t encoder_idx, uint8_t behavior, uint16_t new_code);
 
 void update_time_config(int8_t increment);
 
