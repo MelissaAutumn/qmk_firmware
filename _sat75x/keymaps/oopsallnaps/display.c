@@ -1,20 +1,109 @@
+#include "_sat75x/config.h"
 #include "oopsallnaps_core.h"
+#include "suspend.h"
+#include "timer.h"
 
 #include <qp.h>
 #include <printf.h>
 #include <stdint.h>
 #include <stdio.h>
 
-static painter_device_t display       = 0;
-bool                    display_is_on = false;
+static painter_device_t display           = 0;
+bool                    display_is_on     = false;
+bool                    fixed_info_is_on  = true;
+bool                    requested_wakeup  = true;
+bool                    requested_repaint = true;
+uint32_t                sleep_timer       = 0;
 // static painter_font_handle_t large_font = NULL;
 painter_font_handle_t main_font = NULL;
 
-const char *low_scan_rate_warning  = "[!]";
-bool has_low_scan_rate_warning_drawn = false;
+const char *low_scan_rate_warning           = "[!]";
+bool        has_low_scan_rate_warning_drawn = false;
+
+void request_wakeup(void) {
+    requested_wakeup = true;
+}
+
+void request_repaint(void) {
+    requested_repaint = true;
+}
+
+uint32_t scene_get_usable_width(void) {
+    if (!fixed_info_is_on) {
+        return DISPLAY_WIDTH;
+    }
+    return DISPLAY_WIDTH - (get_fixed_info_width() - 1) ;
+};
+
+void notify_bounds_change(void) {
+    dprintf("Bounds have changed, new usable width = %ld\n", scene_get_usable_width());
+    switch (dm_mode) {
+        case DM_CLOCK:
+            bounds_changed_clock(display);
+            break;
+        case DM_TRAIL:
+            bounds_changed_trail(display);
+            break;
+        default:
+            break;
+    }
+    bounds_fixed_info();
+}
 
 bool should_draw(void) {
-    return display_is_on;
+    // if (!display_is_on) {
+    //     requested_repaint = false;
+    //     requested_wakeup = false;
+    //     sleep_timer = 0;
+    //     return false;
+    // }
+
+    if (requested_wakeup) {
+        requested_repaint = false;
+        requested_wakeup  = false;
+        if (!fixed_info_is_on) {
+            fixed_info_is_on = true;
+            setup_fixed_info();
+            notify_bounds_change();
+            set_display_contrast(display, DISPLAY_BRIGHTNESS);
+        }
+
+        sleep_timer = timer_read32() + STATIC_DISPLAY_TIMEOUT;
+
+        display_wakeup();
+        
+        return true;
+    }
+
+    if (requested_repaint) {
+        requested_repaint = false;
+        if (fixed_info_is_on) {
+            // Also here because we need to repaint everything
+            bounds_fixed_info();
+        }
+        return true;
+    }
+
+    if (!display_is_on) {
+        return false;
+    }
+
+    if (fixed_info_is_on && timer_expired32(timer_read32(), sleep_timer)) {
+        set_display_contrast(display, SLEEP_BRIGHTNESS);
+
+        // Clear the fixed info scene
+        teardown_fixed_info(display);
+        fixed_info_is_on = false;
+        notify_bounds_change();
+
+        if (dm_mode == DM_BONGO || dm_mode == DM_OFF) {
+            display_powerdown();
+        }
+
+        return true;
+    }
+
+    return true;
 }
 
 void display_post_init(void) {
@@ -32,15 +121,13 @@ void display_post_init(void) {
 
     main_font = qp_load_font_mem(font_pixeloid_mono_9px);
     if (main_font) {
-        static const char *text  = "Booting!";
+        static const char *text  = "[LOADING]";
         int16_t            width = qp_textwidth(main_font, text);
         qp_drawtext(display, ((DISPLAY_WIDTH / 2) - (width / 2)), ((DISPLAY_HEIGHT / 2) - (main_font->line_height / 2)), main_font, text);
     }
 
     // Setup our default dm_mode!
     change_dm_mode(dm_mode);
-
-    
 }
 
 void display_powerdown(void) {
@@ -106,7 +193,6 @@ void display_housekeeping(void) {
 
     // If we're hit with terrible performance, just turn it off!
     if (scan_rate < QP_SCANRATE_THRESHOLD) {
-        //dprintf("Scan rate under %d, skipping!\n", QP_SCANRATE_THRESHOLD);
         if (!has_low_scan_rate_warning_drawn) {
             qp_drawtext(display, 0, 0, main_font, low_scan_rate_warning);
             has_low_scan_rate_warning_drawn = true;
@@ -138,5 +224,10 @@ void display_housekeeping(void) {
             break;
         default:
             break;
+    }
+
+    // Don't display fixed info for fullscreen or off scenes
+    if (fixed_info_is_on && (dm_mode != DM_BONGO && dm_mode != DM_OFF)) {
+        scene_fixed_info(display);
     }
 }

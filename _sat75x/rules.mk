@@ -9,6 +9,7 @@ SRC += oopsallnaps_ssd1306.c \
 	oopsallnaps_encoder.c \
 	oopsallnaps_qp.c \
 	display.c \
+	scenes/fixed_info.c \
 	scenes/clock.c \
 	scenes/set_clock.c \
 	scenes/trails.c \

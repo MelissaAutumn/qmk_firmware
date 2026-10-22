@@ -1,6 +1,5 @@
 #include "../oopsallnaps_core.h"
 #include <qp.h>
-#include <math.h>
 #include <printf.h>
 
 int  clock_pos_x = 0;
@@ -8,6 +7,8 @@ int  clock_pos_y = 0;
 int  clock_vel_x = 1;
 int  clock_vel_y = 1;
 bool invert      = false;
+
+rect dirty_text;
 
 int oled_hid_get_hour(void) {
     return last_minute / 60;
@@ -17,56 +18,26 @@ int oled_hid_get_minute(void) {
     return last_minute % 60;
 }
 
-#if 0
-static char *get_time(void) {
-    uint8_t  hour   = last_minute / 60;
-    uint16_t minute = last_minute % 60;
-
-    if (encoder_mode == ENC_MODE_CLOCK_SET) {
-        hour   = hour_config;
-        minute = minute_config;
-    }
-
-    bool is_pm = (hour / 12) > 0;
-    hour       = hour % 12;
-    if (hour == 0) {
-        hour = 12;
-    }
-
-    static char time_str[8] = "";
-    snprintf(time_str, sizeof(time_str), "%02hhu:%02hu%s", hour, minute, is_pm ? "pm" : "am");
-
-    return time_str;
-}
-
-static char *get_date(void) {
-    int16_t year  = last_timespec.year + 1980;
-    int8_t  month = last_timespec.month;
-    int8_t  day   = last_timespec.day;
-
-    if (encoder_mode == ENC_MODE_CLOCK_SET) {
-        year  = year_config + 1980;
-        month = month_config;
-        day   = day_config;
-    }
-
-    static char date_str[11] = "";
-    snprintf(date_str, sizeof(date_str), "%04hd-%02hhd-%02hhd", year, month, day);
-
-    return date_str;
-}
-#endif
-
 void setup_clock(void) {
     clock_pos_x = 0;
     clock_pos_y = 0;
     clock_vel_x = 1;
     clock_vel_y = 1;
     invert      = false;
+    dirty_text  = (rect){0};
 }
 
 void teardown_clock(void) {
     return;
+}
+
+void bounds_changed_clock(painter_device_t display) {
+    if (clock_pos_x + dirty_text.width >= scene_get_usable_width()) {
+        qp_rect(display, dirty_text.pos.x, dirty_text.pos.y, dirty_text.pos.x + dirty_text.width, dirty_text.pos.y + dirty_text.height, 0, 0, 0, true);
+        clock_pos_x = (scene_get_usable_width() - (dirty_text.width + 1));
+        clock_vel_x *= -1;
+        invert = !invert;
+    }
 }
 
 void scene_clock(painter_device_t display) {
@@ -78,7 +49,7 @@ void scene_clock(painter_device_t display) {
     if (timer_elapsed32(last_draw) > QP_UPDATE_INTERVAL) {
         last_draw = timer_read32();
 
-        qp_clear(display);
+        qp_rect(display, dirty_text.pos.x, dirty_text.pos.y, dirty_text.pos.x + dirty_text.width, dirty_text.pos.y + dirty_text.height, 0, 0, 0, true);
 
         int hour   = oled_hid_get_hour();
         int minute = oled_hid_get_minute();
@@ -96,13 +67,15 @@ void scene_clock(painter_device_t display) {
         int16_t clock_width  = qp_textwidth(main_font, time_str);
         int16_t clock_height = main_font->line_height;
 
+        dirty_text = (rect){(vec2){clock_pos_x, clock_pos_y}, clock_width, clock_height};
+
         if (!invert) {
             qp_drawtext(display, clock_pos_x, clock_pos_y, main_font, time_str);
         } else {
             qp_drawtext_recolor(display, clock_pos_x, clock_pos_y, main_font, time_str, 0, 0, 0, 255, 255, 255);
         }
 
-        if (clock_pos_x + clock_width >= DISPLAY_WIDTH || clock_pos_x <= 0) {
+        if (clock_pos_x + clock_width >= scene_get_usable_width() || clock_pos_x <= 0) {
             clock_vel_x *= -1;
             invert = !invert;
         }

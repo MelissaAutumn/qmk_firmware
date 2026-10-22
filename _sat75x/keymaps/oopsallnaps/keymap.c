@@ -136,12 +136,12 @@ void read_host_led_state(void) {
 layer_state_t layer_state_set_kb(layer_state_t state) {
     state = layer_state_set_user(state);
     layer = get_highest_layer(state);
-    display_wakeup();
+    request_wakeup();
     return state;
 }
 
 bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
-    display_wakeup();
+    request_wakeup();
     switch (keycode) {
         case OLED_TOGG:
             if (!clock_set_mode) {
@@ -190,7 +190,7 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
 
 bool encoder_update_kb(uint8_t index, bool clockwise) {
     if (!encoder_update_user(index, clockwise)) return false;
-    display_wakeup();
+    request_wakeup();
     encoder_value = (encoder_value + (clockwise ? 1 : -1)) % 64;
     if (index == 0) {
         if (layer == 0) {
@@ -242,8 +242,7 @@ void eeconfig_init_kb_datablock(void) {
 void matrix_init_kb(void) {
     rtcGetTime(&RTCD1, &last_timespec);
     matrix_init_user();
-    display_wakeup();
-    dprintf("Current year: %d\n", last_timespec.year);
+    request_wakeup();
 }
 
 void housekeeping_task_kb(void) {
@@ -252,6 +251,6 @@ void housekeeping_task_kb(void) {
 
     if (minutes_since_midnight != last_minute) {
         last_minute = minutes_since_midnight;
-        // oled_request_repaint();
+        request_repaint();
     }
 }

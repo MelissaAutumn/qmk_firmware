@@ -60,7 +60,12 @@
 
 // QP
 #define QP_SCANRATE_THRESHOLD 200 // Turn off display if we're under this amount of scans
-#define QP_TIMEOUT 30000
+
+#define STATIC_DISPLAY_TIMEOUT 10000
+#define DISPLAY_BRIGHTNESS 0x80
+#define SLEEP_BRIGHTNESS 0x10
+#define ALL_DISPLAY_TIMEOUT 120000
+
 #define QP_UPDATE_INTERVAL 66 // ~15fps
 #define QUANTUM_PAINTER_DISPLAY_TIMEOUT 0 // no auto timeout
 

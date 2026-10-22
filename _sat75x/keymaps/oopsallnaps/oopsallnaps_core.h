@@ -60,6 +60,12 @@ typedef struct {
     uint8_t y;
 } vec2;
 
+typedef struct {
+    vec2 pos;
+    uint8_t width;
+    uint8_t height;
+} rect;
+
 extern painter_font_handle_t main_font;
 
 #define DISPLAY_WIDTH_ACTUAL 128
@@ -78,6 +84,9 @@ void display_powerdown(void);
 void display_wakeup(void);
 void display_housekeeping(void);
 
+void request_wakeup(void);
+void request_repaint(void);
+
 /*
  * Custom QP commands
  */
@@ -89,13 +98,16 @@ bool batch_setpixel(painter_device_t device, const vec2 *sequence, size_t sequen
  * SCENES
  */
 
+
 void setup_clock(void);
 void teardown_clock(void);
 void scene_clock(painter_device_t display);
+void bounds_changed_clock(painter_device_t display);
 
 void setup_wave_trail(painter_device_t display);
 void teardown_wave_trail(void);
 void scene_wave_trail(painter_device_t display);
+void bounds_changed_trail(painter_device_t display);
 
 void setup_bongo(void);
 void teardown_bongo(void);
@@ -105,6 +117,15 @@ void scene_bongo(painter_device_t display, bool minimal);
 void setup_set_clock(void);
 void teardown_set_clock(void);
 void scene_set_clock(painter_device_t display);
+
+// This is the fixed ui
+uint32_t get_fixed_info_width(void);
+void setup_fixed_info(void);
+void teardown_fixed_info(painter_device_t display);
+void scene_fixed_info(painter_device_t display);
+void bounds_fixed_info(void);
+
+uint32_t scene_get_usable_width(void);
 
 /*
  * ENCODER

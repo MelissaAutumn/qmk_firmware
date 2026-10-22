@@ -39,6 +39,9 @@ bool batch_setpixel(painter_device_t device, const vec2 *sequence, size_t sequen
     qp_internal_fill_pixdata(device, 1, 255, 255, 255);
     bool ret = true;
     for (int i = 0; i < sequence_len; i++) {
+        if (sequence[i].x + offset_x >= scene_get_usable_width()) {
+            continue;
+        }
         bool ok = qp_internal_setpixel_impl(device, sequence[i].x + offset_x, sequence[i].y + offset_y);
         if (!ok) {
             ret = false;
