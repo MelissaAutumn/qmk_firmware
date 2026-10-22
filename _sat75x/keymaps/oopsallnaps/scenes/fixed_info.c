@@ -136,7 +136,6 @@ void scene_fixed_info(painter_device_t display) {
         // Clear our section
         qp_rect(display, scene_get_usable_width() + 1, offset_y, DISPLAY_WIDTH, DISPLAY_HEIGHT, 0, 0, 0, true);
 
-        
         qp_line(display, scene_get_usable_width() + 1, 0, scene_get_usable_width() + 1, DISPLAY_HEIGHT, 255, 255, 255);
 
         char buffer[32] = {""};

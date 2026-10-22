@@ -61,8 +61,8 @@
 // QP
 #define QP_SCANRATE_THRESHOLD 200 // Turn off display if we're under this amount of scans
 
-#define STATIC_DISPLAY_TIMEOUT 10000
-#define DISPLAY_BRIGHTNESS 0x80
+#define STATIC_DISPLAY_TIMEOUT 15000
+#define DISPLAY_BRIGHTNESS 0x7F
 #define SLEEP_BRIGHTNESS 0x10
 #define ALL_DISPLAY_TIMEOUT 120000
 

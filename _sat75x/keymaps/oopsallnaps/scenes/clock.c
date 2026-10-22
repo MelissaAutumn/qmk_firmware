@@ -37,6 +37,8 @@ void bounds_changed_clock(painter_device_t display) {
         clock_pos_x = (scene_get_usable_width() - (dirty_text.width + 1));
         clock_vel_x *= -1;
         invert = !invert;
+        
+        request_repaint();
     }
 }
 

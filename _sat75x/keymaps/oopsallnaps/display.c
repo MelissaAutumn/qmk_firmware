@@ -1,6 +1,5 @@
 #include "_sat75x/config.h"
 #include "oopsallnaps_core.h"
-#include "suspend.h"
 #include "timer.h"
 
 #include <qp.h>
@@ -10,7 +9,7 @@
 
 static painter_device_t display           = 0;
 bool                    display_is_on     = false;
-bool                    fixed_info_is_on  = true;
+bool                    fixed_info_is_on  = false;
 bool                    requested_wakeup  = true;
 bool                    requested_repaint = true;
 uint32_t                sleep_timer       = 0;
@@ -51,13 +50,6 @@ void notify_bounds_change(void) {
 }
 
 bool should_draw(void) {
-    // if (!display_is_on) {
-    //     requested_repaint = false;
-    //     requested_wakeup = false;
-    //     sleep_timer = 0;
-    //     return false;
-    // }
-
     if (requested_wakeup) {
         requested_repaint = false;
         requested_wakeup  = false;
